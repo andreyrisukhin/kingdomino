@@ -1,4 +1,4 @@
-This table contains tiles for Kingdomino. The first line is skipped as a precondition. Key: f:fields, w:woods, o:ocean, p:pasture, s:swamp, m:mines.
+Cards 1.0. This table contains tiles for Kingdomino. The first line is skipped as a precondition. Key: f:fields, w:woods, o:ocean, p:pasture, s:swamp, m:mines.
 1 f 0 f 0
 2 f 0 f 0
 3 w 0 w 0
