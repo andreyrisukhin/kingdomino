@@ -66,6 +66,7 @@ class Board():
     Currently supports square boards only.
     """
     def __init__(self, size:int = 5):
+        self.size = size
         self.EMPTY = 'x'
         self.CASTLE = 'c'
         self.grid = [[Face(self.EMPTY, 0) for i in range(size)] for i in range(size)]
@@ -170,17 +171,57 @@ class Board():
         else:
             print(f'Illegal attempt to place {d} at {coord}')
 
+    def get_score(self):
+        """
+        Returns an int score.
+        Score calculated: (count adjacent faces of same type) * (crown count in that region).
+        """
+        to_search_mask = [[1 for i in range(self.size)] for i in range(self.size)] # 1: to search, 0: already searched
+
+        def recur_search(i,j, area_type):
+            """
+            Given coords and an area type to match.
+            Return (island size, crown count).
+            """
+            # print('recur')
+            # print(f'i,j: {i,j}')
+            if (i < 0 or j < 0 or i >= self.size or j >= self.size
+                    or to_search_mask[i][j] == 0 or not area_type == self.grid[i][j].area):
+                # print('done')
+                return 0,0
+            else:
+                to_search_mask[i][j] = 0
+                tiles_up, crowns_up = recur_search(i-1,j, area_type)
+                tiles_down, crowns_down = recur_search(i+1,j, area_type)
+                tiles_left, crowns_left = recur_search(i,j-1, area_type)
+                tiles_right, crowns_right = recur_search(i,j+1, area_type)
+                tiles = 1 + tiles_up + tiles_down + tiles_left + tiles_right
+                crowns = self.grid[i][j].crowns + crowns_up + crowns_down + crowns_left + crowns_right
+                return tiles, crowns
+        """
+        Had an interesting bug here: score calculation should happen at each island, 
+            I calculated outside loops globally which was total tiles * total crowns.
+        """
+        score = 0
+        for i in range(self.size):
+            for j in range(self.size): # NOTE rely on square grid assumption
+                if to_search_mask[i][j] == 1:
+                    print(to_search_mask)
+                    # print('Begin a search')
+                    tiles_ij, crowns_ij = recur_search(i, j, area_type=self.grid[i][j].area)
+                    score += tiles_ij * crowns_ij
+        return score 
+
+
+        # TODO reminds me of island leetcode problem
 
         # TODO There has to be a cleaner way here, the connected island leetcode problem
         # Wonder if could reuse this "identify an island" code to score? possibly not, different decisions (contiguous chunk vs is adjacent equal type)
 
-    # def is_legal_domino_put():
-
     # TODO discard a domino if cannot put anywhere
 
-    # TODO a "where can I put this domino?" that returns list of coords that are valid , would this be useful?
-    # Strongly think this needs to be implemented, for game logic of discard piece option
 
+# TODO DELETE THESE, DUPLICATED IN GAME MANAGER
 def create_card_map(filepath):
     """
     Takes the filepath to create the cards from.
@@ -198,7 +239,7 @@ def create_card_map(filepath):
             id, card = line.split(" ", maxsplit=1)
             card, _ = card.split("\n")
             a1, c1, a2, c2 = card.split(" ", maxsplit=3)
-            cards[int(id)] = Domino(id, area_1=a1, crowns_1=c1, area_2=a2, crowns_2=c2)
+            cards[int(id)] = Domino(id, area_1=a1, crowns_1=int(c1), area_2=a2, crowns_2=int(c2))
     return cards
 
 def shuffle(num_cards):
@@ -240,7 +281,7 @@ class GameManager():
                 id, card = line.split(" ", maxsplit=1)
                 card, _ = card.split("\n")
                 a1, c1, a2, c2 = card.split(" ", maxsplit=3)
-                cards[int(id)] = Domino(id, area_1=a1, crowns_1=c1, area_2=a2, crowns_2=c2)
+                cards[int(id)] = Domino(id, area_1=a1, crowns_1=int(c1), area_2=a2, crowns_2=int(c2))
         return cards
 
     def shuffle(self, num_cards):
@@ -298,6 +339,9 @@ class Game():
 
     # TODO add features of UI for possible moves
 
+
+# === Local Testing Below ====
+
 cards = create_card_map("./cards.txt")
 shuffled = shuffle(len(cards))
 # print(shuffled)
@@ -323,6 +367,7 @@ for i in range(12):
     print(f'{len(di_places)} moves')
     print(b)
 
+print(b.get_score())
 
 # d1 = cards[shuffled[0]]
 # d1_places = b.get_legal_coords(d1)
