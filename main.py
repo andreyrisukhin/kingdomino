@@ -13,20 +13,15 @@ Recall Thompson Sampling worked better in CSE 312 on HW.
 
 """
 TODO List
-1) Data structure to represent maps
-2) Score function, get score of a map
+> Domino selection process with multiple (4) players
 """
 
 import numpy as np
-
 rng = np.random.default_rng()
-
-cards = {}
 
 from collections import namedtuple
 Face = namedtuple('Face', 'area crowns')
 # Could make the domino a namedtuple too, face1 and face2
-
 # Coord = namedtuple('Coord', 'r1 c1 r2 c2') # TODO is this useful?
 
 class Domino():
@@ -35,13 +30,11 @@ class Domino():
     """
     def __init__(self, id:int, area_1:str, crowns_1:int, area_2:str, crowns_2:int):
         self.id = id
-        # self.area_1, self.crowns_1 = area_1, crowns_1
-        # self.area_2, self.crowns_2 = area_2, crowns_2
         self.face_1 = Face(area_1, crowns_1)
         self.face_2 = Face(area_2, crowns_2)
 
     def __repr__(self):
-        #return f"Card {self.id}: TODO add repr "#{self.area_1} {self.crowns_1} {self.area_2} {self.crowns_2}"
+        """ Noticed that printing domino ID was not useful. """
         s = f'{self.face_1.area}{self.face_1.crowns} {self.face_2.area}{self.face_2.crowns}'
         return s
 
@@ -62,6 +55,7 @@ class Board():
         'castle' is the player's castle, 1x1.
         Other characters are of form "<area id> <crown count>".
     Has methods to interact, with logic to allow legal moves.
+    Can calculate score.
 
     Currently supports square boards only.
     """
@@ -73,15 +67,13 @@ class Board():
         self.has_castle = False
 
     def __repr__(self):
-        s = ""
+        """ Return a human-friendly picture of the board. """
+        s = ''
         for row in self.grid:
             for col in row:
                 s += f'{col.area}{col.crowns} '
             s += '\n'
         return s
-
-    # def get_grid(self):
-    #     return self.grid # TODO return a copy, not a reference
 
     def put_castle(self, row:int, col:int):
         """
@@ -183,11 +175,8 @@ class Board():
             Given coords and an area type to match.
             Return (island size, crown count).
             """
-            # print('recur')
-            # print(f'i,j: {i,j}')
             if (i < 0 or j < 0 or i >= self.size or j >= self.size
                     or to_search_mask[i][j] == 0 or not area_type == self.grid[i][j].area):
-                # print('done')
                 return 0,0
             else:
                 to_search_mask[i][j] = 0
@@ -206,19 +195,9 @@ class Board():
         for i in range(self.size):
             for j in range(self.size): # NOTE rely on square grid assumption
                 if to_search_mask[i][j] == 1:
-                    print(to_search_mask)
-                    # print('Begin a search')
                     tiles_ij, crowns_ij = recur_search(i, j, area_type=self.grid[i][j].area)
                     score += tiles_ij * crowns_ij
         return score 
-
-
-        # TODO reminds me of island leetcode problem
-
-        # TODO There has to be a cleaner way here, the connected island leetcode problem
-        # Wonder if could reuse this "identify an island" code to score? possibly not, different decisions (contiguous chunk vs is adjacent equal type)
-
-    # TODO discard a domino if cannot put anywhere
 
 
 # TODO DELETE THESE, DUPLICATED IN GAME MANAGER
@@ -329,26 +308,30 @@ class Game():
         return not self.isOver
 
     def earlyGame(self):
-        """
-        Players place castles
-        """
+        """ Players place castles. """
         for p in self.players:
             print(f'Player {p} to place castle.')
             # TODO continue eventually
+            pass 
+
+    def midGame(self):
+        """ Players claim and place dominoes. """
+        pass
+
+    def endGame(self):
+        """ Players are done placing dominoes; tally scores and return. """
+        pass 
+
 
 
     # TODO add features of UI for possible moves
-
+# TODO discard a domino if cannot put anywhere
 
 # === Local Testing Below ====
 
 cards = create_card_map("./cards.txt")
 shuffled = shuffle(len(cards))
-# print(shuffled)
-# print(shuffled[0])
-# print(cards.keys())
 print(cards[shuffled[0]])
-# print(cards)
 
 b = Board()
 print(b)
@@ -368,13 +351,3 @@ for i in range(12):
     print(b)
 
 print(b.get_score())
-
-# d1 = cards[shuffled[0]]
-# d1_places = b.get_legal_coords(d1)
-# print(d1_places)
-# print(len(d1_places))
-
-# b.put_domino(d1, d1_places[0])
-# print(b)
-
-
