@@ -27,7 +27,8 @@ class Domino():
 
     def __repr__(self):
         """ Noticed that printing domino ID was not useful. """
-        s = f'{self.face_1.area}{self.face_1.crowns} {self.face_2.area}{self.face_2.crowns}'
+        """ Later realized that domino ID is useful. """
+        s = f'{self.id} {self.face_1.area}{self.face_1.crowns} {self.face_2.area}{self.face_2.crowns}'
         return s
 
     # def __eq__(self, other):
@@ -201,9 +202,6 @@ class GameManager():
     """
     This class manages user interaction with Kingdomino.
     """
-    """
-    Given the path to the text file containing Kingdomino cards.
-    """
     def _create_card_map(self, filepath):
         """
         Takes the filepath to create the cards from.
@@ -238,9 +236,7 @@ class GameManager():
         self.card_dict = self._create_card_map(self.cardpath)
 
     def new_game(self):
-        """
-        Manages a game.
-        """
+        """ Manages a game. """
         shuffled_ids = self._shuffle(len(self.card_dict))
         shuffled_deck = []
         for card_id in shuffled_ids:
@@ -274,7 +270,7 @@ class Player():
         else: print("error claiming, no matching strategy")
 
     def place(self, d:Domino, b:Board):
-        """ Plays the domino on the board. Returns a placement from the list of possible spaces. """
+        """ Plays the domino on the board. Returns None or a placement from the list of possible spaces. """
         if self.strat == "firstvalid": return self._place_firstval(d, b)
         else: print("error placing, no matching strategy")
 
@@ -362,12 +358,16 @@ class Game():
                 print(f"  Player {pi} to claim.")
                 nc_i = p.claim(self.upcoming, self.boards[pi])
                 nc_d = self.upcoming[nc_i]
-                new_claims[nc_i] = Claim(pi, nc_d)
+
+                # print(f'DB 366| pi = {pi}')
+                new_claims[pi] = Claim(pi, nc_d)
                 self.upcoming.remove(nc_d) # Remove claimed piece from possible list
 
                 print(f"    Player {pi} to place.")
-                xy = p.place(nc_d, self.boards[i])
-                self.boards[pi].put_domino(nc_d, xy)
+                xy = p.place(nc_d, self.boards[pi]) # TODO had bug here, typed i instead of pi. Why is i still in scope here?
+                if xy: # If not None, if there is a valid placement
+                    self.boards[pi].put_domino(nc_d, xy)
+            # print(f'DB 371| new_claims = {new_claims}')
             self.claimed = new_claims
 
         print("Endgame: Place final claims and tally score.")
