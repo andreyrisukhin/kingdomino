@@ -14,6 +14,7 @@ from collections import namedtuple
 Face = namedtuple('Face', 'area crowns')
 # Could make the domino a namedtuple too, face1 and face2
 # Coord = namedtuple('Coord', 'r1 c1 r2 c2') # TODO is this useful?
+Claim = namedtuple('Claim', 'pid domino')
 
 class Domino():
     """
@@ -198,7 +199,7 @@ class GameManager():
     """
     Given the path to the text file containing Kingdomino cards.
     """
-    def create_card_map(filepath):
+    def _create_card_map(self, filepath):
         """
         Takes the filepath to create the cards from.
         Returns a map of card IDs (as in game) to card faces.
@@ -218,7 +219,7 @@ class GameManager():
                 cards[int(id)] = Domino(id, area_1=a1, crowns_1=int(c1), area_2=a2, crowns_2=int(c2))
         return cards
 
-    def shuffle(self, num_cards):
+    def _shuffle(self, num_cards):
         """
         Takes an int representing the total number of cards.
         Returns a random sequence of card IDs.
@@ -229,57 +230,153 @@ class GameManager():
 
     def __init__(self, cardpath:str):
         self.cardpath = cardpath
-        self.card_dict = create_card_map(self.cardpath)
+        self.card_dict = self._create_card_map(self.cardpath)
 
     def new_game(self):
         """
         Manages a game.
         """
-        shuffled_ids = self.shuffle(len(self.card_dict))
+        shuffled_ids = self._shuffle(len(self.card_dict))
         shuffled_deck = []
         for card_id in shuffled_ids:
             shuffled_deck.append(self.card_dict[card_id])
 
-        g = Game(deck=shuffled_deck)
+        players = [Player(), Player(), Player(), Player()]
+        g = Game(deck=shuffled_deck, players=players)
 
+        # g.earlyGame()
 
+        # g.midGame()
+            
+        # g.endGame()
 
-        while (g.isPlaying):
-            pass 
+class Player():
+    """
+    The decisions and logic in how a player chooses moves.
+    Play procedures include: firstvalid, random, consoleinput, 
+        and eventually markovtree, rnn
 
+    The Player does NOT modify boards passed as fields. Instead,
+        sends commands to the Game to modify boards.
+    """
+    def __init__(self, strategy:str="firstvalid"):
+        self.strat = strategy
+
+    def claim(self, choices, b:Board):
+        """
+        Returns a domino from the list of choices.
+        """
+        if self.strat == "firstvalid": return self._claim_firstval(choices, b)
+        else: print("error claiming, no matching strategy")
+
+    def place(self, d:Domino, b:Board):
+        """
+        Plays the domino on the board.
+        Returns a placement from the list of possible spaces.
+        """
+        if self.strat == "firstvalid": return self._place_firstval(d, b)
+        else: print("error placing, no matching strategy")
+
+    def _claim_firstval(self, choices, b:Board):
+        return choices[0]
+
+    def _place_firstval(self, d:Domino, b:Board):
+        d_places = b.get_legal_coords(d)
+
+        if not d_places == []: # If valid place exists
+            return d_places[0]
+        else: # If no placement existed, the domino was discarded
+            return None
+
+    # TODO continue strategies
 
 class Game():
     """
     Represents a single game, allows for interaction with boards.
     """
-    def __init__(self, deck, players:int=4):
-        self.players = players
-        self.boards = []
-        self.deck = deck
-        self.isOver = False
-        for p in range(players):
+    def __init__(self, deck, players, n_players:int=4):
+        assert n_players == players, f"Was given {len(players)} players when expecting {n_players}"
+        self.n_players = n_players
+        self.players = players # List of Player()
+        self.boards = [] # p_i's board is at boards[i]
+        for p in range(n_players):
             self.boards.append(Board())
-
-        self.table1 = []
-        self.table2 = []
+        self.deck = deck # A list of Card structs
+        self.isOver = False
+        self.upcoming = [] # Stores unclaimed cards
+        self.claimed = [] # Stores Claim(pid, domino)
+        # Upcoming cards in sorted batches of 4
+        self.upcoming = self.deck[:4]
+        self.upcoming.sort()
+        self.deck = self.deck[4:] # Remove from deck
+        # Game initializes in player order, change this to add optionality
+        for i, c in enumerate(self.upcoming):
+            self.claimed.append(Claim(i, c))
+        self.upcoming = []
 
     def isPlaying(self):
         return not self.isOver
 
-    def earlyGame(self):
-        """ Players place castles. """
+    def play(self):
+        print("Placing castles.")
         for p in self.players:
-            print(f'Player {p} to place castle.')
-            # TODO continue eventually
-            pass 
+            print(f'  Player{p} to place castle.')
+            # TODO remove the hardcoding
+            self.boards[p].put_castle(2,2)
+        
+        
+        
+        print("Claims preset by player number")
+        self.claimed = self.upcoming
 
-    def midGame(self):
-        """ Players claim and place dominoes. """
-        pass
+        
+        print("Laying Deck")
 
-    def endGame(self):
-        """ Players are done placing dominoes; tally scores and return. """
-        pass 
+
+
+    # def earlyGame(self):
+    #     """ Players place castles. """
+    #     for p in self.players:
+    #         print(f'Player {p} to place castle.')
+    #         # while self.boards[p].
+
+    #         # TODO continue eventually
+
+    #     # Put out 4 dominos, preclaim
+    #     self.table1 = self.deck[:4]
+    #     self.deck = self.deck[4:]
+    #     for i in range(len(self.claim1)):
+    #         self.claim1[i] = i
+    #         self.next1 = not self.next1
+
+    # def midGame(self):
+    #     """ Players claim and place dominoes. """
+    #     # while (g.isPlaying):
+
+    #     # Put out 4 dominos
+    #     # Players move claims
+    #     # Players place previously claimed domino
+        
+    #     if self.next1:
+    #         self.table1 = self.deck[:4]
+    #         self.deck = self.deck[4:]
+    #         for i in (self.claim2):
+    #             # Get the player preference here
+                
+    #             self.claim1[i] = i
+    #             self.next1 = not self.next1
+    #         pass 
+    #     else:    
+    #         pass
+
+    # def endGame(self):
+    #     """ Players are done placing dominoes; tally scores and return. """
+        
+    #     # Players place their claimed dominoes (no more to claim)
+    #     # Tally scores
+        
+
+    #     pass 
 
 
 

@@ -49,21 +49,27 @@ cards = create_card_map("./cards.txt")
 shuffled = shuffle(len(cards))
 print(cards[shuffled[0]])
 
-b = Board()
-print(b)
-# b.put_castle(2,2)
-b.put_castle(4,4)
-print(b)
+# print(shuffled[:4])
+# print(sorted(shuffled[:4]))
 
-for i in range(12):
-    di = cards[shuffled[i]]
-    di_places = b.get_legal_coords(di)
+gm = GameManager(cardpath="./cards.txt")
+gm.new_game()
 
-    if not di_places == []: # Otherwise if no legal moves, skip placing this card
-        b.put_domino(di, di_places[0])
+# b = Board()
+# print(b)
+# # b.put_castle(2,2)
+# b.put_castle(4,4)
+# print(b)
 
-    print(f'di: {di}')
-    print(f'{len(di_places)} moves')
-    print(b)
+# for i in range(12):
+#     di = cards[shuffled[i]]
+#     di_places = b.get_legal_coords(di)
 
-print(b.get_score())
+#     if not di_places == []: # Otherwise if no legal moves, skip placing this card
+#         b.put_domino(di, di_places[0])
+
+#     print(f'di: {di}')
+#     print(f'{len(di_places)} moves')
+#     print(b)
+
+# print(b.get_score())
