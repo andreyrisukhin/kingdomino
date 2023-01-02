@@ -30,6 +30,11 @@ class Domino():
         s = f'{self.face_1.area}{self.face_1.crowns} {self.face_2.area}{self.face_2.crowns}'
         return s
 
+    # def __eq__(self, other):
+    #     if isinstance(other, Domino):
+    #         return self.id == other.id
+    #     return False
+
     def get_id(self):
         return self.id
 
@@ -243,12 +248,8 @@ class GameManager():
 
         players = [Player(), Player(), Player(), Player()]
         g = Game(deck=shuffled_deck, players=players)
+        g.play()
 
-        # g.earlyGame()
-
-        # g.midGame()
-            
-        # g.endGame()
 
 class Player():
     """
@@ -290,6 +291,12 @@ class Player():
 
     # TODO continue strategies
 
+
+# TODO a better way?
+""" Global method to act as key for sorting deck. """
+def get_d_id(d:Domino):
+    return d.get_id()
+
 class Game():
     """
     Represents a single game, allows for interaction with boards.
@@ -307,7 +314,11 @@ class Game():
         self.claimed = [] # Stores Claim(pid, domino)
         # Upcoming cards in sorted batches of 4
         self.upcoming = self.deck[:4]
-        self.upcoming.sort()
+
+        # TODO sorting debug
+        # self.upcoming.sort(key=get_id)
+        self.upcoming = sorted(self.upcoming, key=get_d_id)
+        
         self.deck = self.deck[4:] # Remove from deck
         # Game initializes in player order
         # TODO above, change this to add optionality
@@ -324,7 +335,13 @@ class Game():
         for i, p in enumerate(self.players):
             print(f'  Player {i} to place castle.')
             found_xy = p.found(self.boards[i])
-            self.boards[p].put_castle(found_xy)
+            # print(f'DB 338|: found_xy = {found_xy}')
+            self.boards[i].put_castle(*found_xy)
+
+            """
+            Interesting bug: to pass the tuple as positional args, use * operator.
+            Look at Python "Unpacking Argument Lists" for more.
+            """
 
         print("Midgame begins")
         print("--------------")
@@ -333,10 +350,13 @@ class Game():
             print("Laying cards")
             # Upcoming cards in sorted batches of 4
             self.upcoming = self.deck[:4]
-            self.upcoming.sort()
+            # self.upcoming.sort()
+            self.upcoming = sorted(self.upcoming, key=get_d_id)
             self.deck = self.deck[4:] # Remove from deck
             new_claims = [None, None, None, None] # Temporary storage 
+            print(f'DB 357| self.claimed = {self.claimed}')
             for lc in self.claimed: # lc := last claimed
+                
                 pi = lc.pid
                 p = self.players[lc.pid]
                 print(f"  Player {pi} to claim.")
