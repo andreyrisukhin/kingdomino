@@ -198,11 +198,6 @@ class GameManager():
     """
     Given the path to the text file containing Kingdomino cards.
     """
-
-    def __init__(self, cardpath:str):
-        self.cardpath = cardpath
-        self.card_dict = create_card_map(self.cardpath)
-
     def create_card_map(filepath):
         """
         Takes the filepath to create the cards from.
@@ -231,6 +226,10 @@ class GameManager():
         deck = np.arange(start=1, stop=num_cards)
         shuffled = rng.permutation(deck)
         return shuffled
+
+    def __init__(self, cardpath:str):
+        self.cardpath = cardpath
+        self.card_dict = create_card_map(self.cardpath)
 
     def new_game(self):
         """
