@@ -45,15 +45,12 @@ def shuffle(num_cards):
 
 # === Local Testing Below ====
 
-cards = create_card_map("./cards.txt")
-shuffled = shuffle(len(cards))
-print(cards[shuffled[0]])
+# cards = create_card_map("./cards.txt")
+# shuffled = shuffle(len(cards))
+# print(cards[shuffled[0]])
 
 # print(shuffled[:4])
 # print(sorted(shuffled[:4]))
-
-gm = GameManager(cardpath="./cards.txt")
-gm.new_game()
 
 # b = Board()
 # print(b)
@@ -73,3 +70,7 @@ gm.new_game()
 #     print(b)
 
 # print(b.get_score())
+
+
+gm = GameManager(cardpath="./cards.txt")
+gm.new_game()
