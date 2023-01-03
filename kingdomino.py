@@ -379,12 +379,15 @@ class Game():
 
         print("Endgame: Place final claims and tally score.")
         # TODO deduplicate this code
+
+        assert len(self.claimed) == 4, f'Expected 4 cards remaining, but len(self.claimed) = {len(self.claimed)}'
+        print(f'DB 384| self.claimed = {self.claimed}')
         for lc in self.claimed: # lc := last claimed
                 pi = lc.pid
                 p = self.players[lc.pid]
-                print(f"  Player {pi} to claim.")
                 
                 # Already claimed!
+                # print(f"  Player {pi} to claim.")
                 # nc_i = p.claim(self.upcoming, self.boards[pi])
                 # nc_d = self.upcoming[nc_i]
                 # new_claims[nc_i] = Claim(pi, nc_d)
@@ -392,10 +395,12 @@ class Game():
                 # # self.upcoming is empty here
                 # # self.upcoming.remove(nc_d) # Remove claimed piece from possible list
 
+                c_d = lc.domino # c_d := claimed domino
+
                 print(f"    Player {pi} to place.")
-                xy = p.place(nc_d, self.boards[i])
+                xy = p.place(c_d, self.boards[pi])
                 if xy: 
-                    self.boards[pi].put_domino(nc_d, xy)
+                    self.boards[pi].put_domino(c_d, xy)
         self.claimed = []
 
         print(f'Final Scores')
