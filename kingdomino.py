@@ -300,8 +300,6 @@ class Game():
     def __init__(self, deck, players, n_players:int=4):
         assert len(deck) % 4 == 0, f"Game requires deck % 4 == 0, recieved {len(deck)} cards"
         self.deck = deck # A list of Card structs
-
-        
         assert n_players == len(players), f"Was given {len(players)} players when expecting {n_players}"
         self.n_players = n_players
         self.players = players # List of Player()
@@ -385,14 +383,19 @@ class Game():
                 pi = lc.pid
                 p = self.players[lc.pid]
                 print(f"  Player {pi} to claim.")
-                nc_i = p.claim(self.upcoming, self.boards[pi])
-                nc_d = self.upcoming[nc_i]
-                new_claims[nc_i] = Claim(pi, nc_d)
-                self.upcoming.remove(nc_d) # Remove claimed piece from possible list
+                
+                # Already claimed!
+                # nc_i = p.claim(self.upcoming, self.boards[pi])
+                # nc_d = self.upcoming[nc_i]
+                # new_claims[nc_i] = Claim(pi, nc_d)
+                
+                # # self.upcoming is empty here
+                # # self.upcoming.remove(nc_d) # Remove claimed piece from possible list
 
                 print(f"    Player {pi} to place.")
                 xy = p.place(nc_d, self.boards[i])
-                self.boards[pi].put_domino(nc_d, xy)
+                if xy: 
+                    self.boards[pi].put_domino(nc_d, xy)
         self.claimed = []
 
         print(f'Final Scores')
