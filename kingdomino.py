@@ -227,7 +227,7 @@ class GameManager():
         Takes an int representing the total number of cards.
         Returns a random sequence of card IDs.
         """
-        deck = np.arange(start=1, stop=num_cards)
+        deck = np.arange(start=1, stop=num_cards+1)
         shuffled = rng.permutation(deck)
         return shuffled
 
@@ -238,6 +238,7 @@ class GameManager():
     def new_game(self):
         """ Manages a game. """
         shuffled_ids = self._shuffle(len(self.card_dict))
+        assert len(shuffled_ids) % 4 == 0, f'len shuffled_ids is {len(shuffled_ids)}, expected % 4 == 0'
         shuffled_deck = []
         for card_id in shuffled_ids:
             shuffled_deck.append(self.card_dict[card_id])
@@ -287,7 +288,6 @@ class Player():
 
     # TODO continue strategies
 
-
 # TODO a better way?
 """ Global method to act as key for sorting deck. """
 def get_d_id(d:Domino):
@@ -298,13 +298,16 @@ class Game():
     Represents a single game, allows for interaction with boards.
     """
     def __init__(self, deck, players, n_players:int=4):
+        assert len(deck) % 4 == 0, f"Game requires deck % 4 == 0, recieved {len(deck)} cards"
+        self.deck = deck # A list of Card structs
+
+        
         assert n_players == len(players), f"Was given {len(players)} players when expecting {n_players}"
         self.n_players = n_players
         self.players = players # List of Player()
         self.boards = [] # p_i's board is at boards[i]
         for p in range(n_players):
             self.boards.append(Board())
-        self.deck = deck # A list of Card structs
         self.isOver = False
         self.upcoming = [] # Stores unclaimed cards
         self.claimed = [] # Stores Claim(pid, domino)
@@ -343,6 +346,11 @@ class Game():
         print("--------------")
 
         while not self.deck == []:
+            print(f'DB 346| len(self.deck) = {len(self.deck)}')
+            assert len(self.deck) % 4 == 0, "Deck needs mod 4 amount of cards"
+            
+            print(f'DB 346| self.deck = {self.deck}')
+
             print("Laying cards")
             # Upcoming cards in sorted batches of 4
             self.upcoming = self.deck[:4]
@@ -356,6 +364,7 @@ class Game():
                 pi = lc.pid
                 p = self.players[lc.pid]
                 print(f"  Player {pi} to claim.")
+                print(f'DB 361| self.upcoming = {self.upcoming}')
                 nc_i = p.claim(self.upcoming, self.boards[pi])
                 nc_d = self.upcoming[nc_i]
 
