@@ -245,7 +245,8 @@ class GameManager():
 
         players = [Player(), Player(), Player(), Player()]
         g = Game(deck=shuffled_deck, players=players)
-        g.play()
+        scores = g.play()
+        return scores
 
 
 class Player():
@@ -257,6 +258,10 @@ class Player():
     The Player does NOT modify boards passed as fields. Instead,
         sends commands to the Game to modify boards.
     """
+
+    # TODO add strategies that look at other player boards
+    # A "deny" strategy
+
     def __init__(self, strategy:str="firstvalid"):
         self.strat = strategy
 
@@ -311,103 +316,81 @@ class Game():
         self.claimed = [] # Stores Claim(pid, domino)
         # Upcoming cards in sorted batches of 4
         self.upcoming = self.deck[:4]
-
-        # TODO sorting debug
-        # self.upcoming.sort(key=get_id)
         self.upcoming = sorted(self.upcoming, key=get_d_id)
-        
         self.deck = self.deck[4:] # Remove from deck
         # Game initializes in player order
-        # TODO above, change this to add optionality
+        # TODO change player order init to add optionality
         for i, d in enumerate(self.upcoming):
             self.claimed.append(Claim(i, d))
         self.upcoming = []
-        print("Players autoclaimed dominos in order")
+        # print("Players autoclaimed dominos in order")
 
     def isPlaying(self):
         return not self.isOver
 
     def play(self):
-        print("Placing castles.")
+        # print("Placing castles.")
         for i, p in enumerate(self.players):
-            print(f'  Player {i} to place castle.')
+            # print(f'  Player {i} to place castle.')
             found_xy = p.found(self.boards[i])
             # print(f'DB 338|: found_xy = {found_xy}')
             self.boards[i].put_castle(*found_xy)
-
             """
             Interesting bug: to pass the tuple as positional args, use * operator.
             Look at Python "Unpacking Argument Lists" for more.
             """
-
-        print("Midgame begins")
-        print("--------------")
-
+        # print("Midgame begins")
+        # print("--------------")
         while not self.deck == []:
-            print(f'DB 346| len(self.deck) = {len(self.deck)}')
-            assert len(self.deck) % 4 == 0, "Deck needs mod 4 amount of cards"
-            
-            print(f'DB 346| self.deck = {self.deck}')
-
-            print("Laying cards")
+            # print(f'DB 346| len(self.deck) = {len(self.deck)}')
+            assert len(self.deck) % 4 == 0, f"Deck has {len(self.deck)} but expected % 4 == 0."
+            # print(f'DB 346| self.deck = {self.deck}')
+            # print("Laying cards")
+            # TODO de-redundify this code from init
             # Upcoming cards in sorted batches of 4
             self.upcoming = self.deck[:4]
-            # self.upcoming.sort()
             self.upcoming = sorted(self.upcoming, key=get_d_id)
             self.deck = self.deck[4:] # Remove from deck
             new_claims = [None, None, None, None] # Temporary storage 
-            print(f'DB 357| self.claimed = {self.claimed}')
+            # print(f'DB 357| self.claimed = {self.claimed}')
             for lc in self.claimed: # lc := last claimed
-                
                 pi = lc.pid
                 p = self.players[lc.pid]
-                print(f"  Player {pi} to claim.")
-                print(f'DB 361| self.upcoming = {self.upcoming}')
+                # print(f"  Player {pi} to claim.")
+                # print(f'DB 361| self.upcoming = {self.upcoming}')
                 nc_i = p.claim(self.upcoming, self.boards[pi])
                 nc_d = self.upcoming[nc_i]
-
                 # print(f'DB 366| pi = {pi}')
                 new_claims[pi] = Claim(pi, nc_d)
                 self.upcoming.remove(nc_d) # Remove claimed piece from possible list
-
-                print(f"    Player {pi} to place.")
+                # print(f"    Player {pi} to place.")
                 xy = p.place(nc_d, self.boards[pi]) # TODO had bug here, typed i instead of pi. Why is i still in scope here?
                 if xy: # If not None, if there is a valid placement
                     self.boards[pi].put_domino(nc_d, xy)
             # print(f'DB 371| new_claims = {new_claims}')
             self.claimed = new_claims
 
-        print("Endgame: Place final claims and tally score.")
+        # print("Endgame: Place final claims and tally score.")
         # TODO deduplicate this code
-
         assert len(self.claimed) == 4, f'Expected 4 cards remaining, but len(self.claimed) = {len(self.claimed)}'
-        print(f'DB 384| self.claimed = {self.claimed}')
+        # print(f'DB 384| self.claimed = {self.claimed}')
         for lc in self.claimed: # lc := last claimed
                 pi = lc.pid
                 p = self.players[lc.pid]
-                
-                # Already claimed!
-                # print(f"  Player {pi} to claim.")
-                # nc_i = p.claim(self.upcoming, self.boards[pi])
-                # nc_d = self.upcoming[nc_i]
-                # new_claims[nc_i] = Claim(pi, nc_d)
-                
-                # # self.upcoming is empty here
-                # # self.upcoming.remove(nc_d) # Remove claimed piece from possible list
-
                 c_d = lc.domino # c_d := claimed domino
-
-                print(f"    Player {pi} to place.")
+                # print(f"    Player {pi} to place.")
                 xy = p.place(c_d, self.boards[pi])
                 if xy: 
                     self.boards[pi].put_domino(c_d, xy)
         self.claimed = []
-
-        print(f'Final Scores')
+        # print(f'Final Scores')
+        scores = []
         for i,p in enumerate(self.players):
             score_i = self.boards[i].get_score()
-            print(f'  Player {i}: {score_i}')
+            # print(f'  Player {i}: {score_i}')
+            scores.append(score_i)
 
+        return scores
 
     # TODO add features of UI for possible moves
 # TODO discard a domino if cannot put anywhere

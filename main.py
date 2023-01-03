@@ -73,4 +73,12 @@ def shuffle(num_cards):
 
 
 gm = GameManager(cardpath="./cards.txt")
-gm.new_game()
+
+game_outcomes = []
+n = 100
+for i in range(n):
+    gi_scores = gm.new_game()
+    game_outcomes.append(gi_scores)
+
+print(f'Outcomes from {n} games')
+print(game_outcomes)
