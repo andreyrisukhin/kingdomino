@@ -3,8 +3,9 @@ This file contains all Kingdomino-related code.
 Game logic, management, turn order all go here.
 """
 """
-TODO List
-> Domino selection process with multiple (4) players
+TODO tasks
+> Add more strategy variations
+> Fix Monte Carlo Tree Search
 """
 
 import numpy as np
@@ -15,8 +16,6 @@ Face = namedtuple('Face', 'area crowns')
 # Could make the domino a namedtuple too, face1 and face2
 # Coord = namedtuple('Coord', 'r1 c1 r2 c2') # TODO is this useful?
 Claim = namedtuple('Claim', 'pid domino')
-
-# from mctsking import *
 
 class Domino():
     """
@@ -33,6 +32,7 @@ class Domino():
         s = f'{self.id} {self.face_1.area}{self.face_1.crowns} {self.face_2.area}{self.face_2.crowns}'
         return s
 
+    # Instead, there is a global method for key comparison for sorting.
     # def __eq__(self, other):
     #     if isinstance(other, Domino):
     #         return self.id == other.id

@@ -7,9 +7,7 @@ Kingdomino player strategy in style of AlphaGo.
 Monte carlo tree search first trains, and then plays.
 > Save the trained state somewhere
 
-
 Recall Thompson Sampling worked better in CSE 312 on HW. 
-
 """
 
 """
