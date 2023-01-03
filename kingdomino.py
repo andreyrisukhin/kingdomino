@@ -16,6 +16,8 @@ Face = namedtuple('Face', 'area crowns')
 # Coord = namedtuple('Coord', 'r1 c1 r2 c2') # TODO is this useful?
 Claim = namedtuple('Claim', 'pid domino')
 
+# from mctsking import *
+
 class Domino():
     """
     Stores two faces, each a tuple of (area_code:str, crown_count:int).
@@ -235,15 +237,15 @@ class GameManager():
         self.cardpath = cardpath
         self.card_dict = self._create_card_map(self.cardpath)
 
-    def new_game(self):
+    def new_game(self, players=None):
         """ Manages a game. """
         shuffled_ids = self._shuffle(len(self.card_dict))
         assert len(shuffled_ids) % 4 == 0, f'len shuffled_ids is {len(shuffled_ids)}, expected % 4 == 0'
         shuffled_deck = []
         for card_id in shuffled_ids:
             shuffled_deck.append(self.card_dict[card_id])
-
-        players = [Player(), Player(), Player(), Player()]
+        if not players: 
+            players = [Player(), Player(), Player(), Player()]
         g = Game(deck=shuffled_deck, players=players)
         scores = g.play()
         return scores
@@ -264,20 +266,24 @@ class Player():
 
     def __init__(self, strategy:str="firstvalid"):
         self.strat = strategy
+        self.MCTS = 'mcts'
 
     def found(self, b:Board):
         """ Return coords to place castle, founding kingdom. """
         if self.strat == "firstvalid": return self._found_firstval(b)
+        elif self.strat == self.MCTS: return self._found_mcts(b)
         else: print("error founding, no matching strategy")
 
     def claim(self, choices, b:Board):
         """ Returns claimed idx from the list of choices. """
         if self.strat == "firstvalid": return self._claim_firstval(choices, b)
+        elif self.strat == self.MCTS: return self._claim_mcts(choices, b)
         else: print("error claiming, no matching strategy")
 
     def place(self, d:Domino, b:Board):
         """ Plays the domino on the board. Returns None or a placement from the list of possible spaces. """
         if self.strat == "firstvalid": return self._place_firstval(d, b)
+        elif self.strat == self.MCTS: return self._place_mcts(d, b)
         else: print("error placing, no matching strategy")
 
     def _found_firstval(self, b:Board): return 0,0
@@ -290,6 +296,15 @@ class Player():
             return d_places[0]
         else: # If no placement existed, the domino was discarded
             return None
+
+    def _found_mcts(self, b:Board):
+        pass 
+    
+    def _claim_mcts(self, b:Board):
+        pass 
+
+    def _place_mcts(self, d:Domino, b:Board):
+        pass 
 
     # TODO continue strategies
 
@@ -393,4 +408,3 @@ class Game():
         return scores
 
     # TODO add features of UI for possible moves
-# TODO discard a domino if cannot put anywhere
